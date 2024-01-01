@@ -184,7 +184,6 @@ impl Map {
     pub fn start(&mut self, x: usize, y: usize) -> Option<usize> {
         while self.get_tile(x, y).unwrap().get_num() != 0 {
             self.randomize();
-            println!("Number: {}", self.get_tile(x, y).unwrap().get_num());
         }
         self.open(x, y)
     }

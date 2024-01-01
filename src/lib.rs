@@ -1,3 +1,4 @@
+mod menu;
 mod game;
 mod res;
 mod spawn;

@@ -8,7 +8,18 @@ pub struct GameStartEvent {
 }
 
 #[derive(Event)]
+pub struct SpawnInputBoxEvent;
+
+#[derive(Event)]
+pub struct DespawnInputBoxEvent;
+
+#[derive(Event)]
 pub struct GameEndEvent {}
+
+#[derive(Event)]
+pub struct GameOverEvent {
+    pub win: bool,
+}
 
 pub enum FlipType {
     Open,

@@ -61,10 +61,14 @@ pub fn system_spawn_map(
 pub fn system_despawn_map(
     mut commands: Commands,
     mut event: EventReader<GameEndEvent>,
-    query: Query<Entity, With<TileEntity>>,
+    query_tile: Query<Entity, With<TileEntity>>,
+    query_over: Query<Entity, With<GameOverTextMarker>>,
 ) {
     for _ in event.read() {
-        for entity in query.iter() {
+        for entity in query_tile.iter() {
+            commands.entity(entity).despawn_recursive();
+        }
+        for entity in query_over.iter() {
             commands.entity(entity).despawn_recursive();
         }
     }

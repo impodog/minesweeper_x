@@ -2,10 +2,11 @@ use crate::prelude::*;
 
 pub fn system_flip(
     mut map: ResMut<Map>,
-    mut event: EventReader<FlipEvent>,
+    mut event_flip: EventReader<FlipEvent>,
+    mut event_over: EventWriter<GameOverEvent>,
     mut query: Query<(&TileEntity, &mut Handle<Image>)>,
 ) {
-    for e in event.read() {
+    for e in event_flip.read() {
         match map.status {
             MapStatus::Win | MapStatus::Lose => {
                 continue;
@@ -28,6 +29,17 @@ pub fn system_flip(
                             }
                         }
                     }
+                }
+                match map.status {
+                    MapStatus::Win => {
+                        println!("You Win!");
+                        event_over.send(GameOverEvent { win: true });
+                    }
+                    MapStatus::Lose => {
+                        println!("You Lost!");
+                        event_over.send(GameOverEvent { win: false });
+                    }
+                    _ => {}
                 }
             }
         }
