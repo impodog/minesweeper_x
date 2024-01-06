@@ -5,6 +5,7 @@ pub fn system_flip(
     mut event_flip: EventReader<FlipEvent>,
     mut event_over: EventWriter<GameOverEvent>,
     mut query: Query<(&TileEntity, &mut Handle<Image>)>,
+    time: Res<Time>,
 ) {
     for e in event_flip.read() {
         match map.status {
@@ -14,8 +15,8 @@ pub fn system_flip(
             _ => {
                 for (tile, _) in query.iter_mut() {
                     if tile.x == e.x && tile.y == e.y {
-                        if map.get_opened() == 0 {
-                            map.start(e.x, e.y);
+                        if !map.is_started {
+                            map.start(e.x, e.y, time.elapsed_seconds());
                         }
                         match e.button {
                             FlipType::Open => {
@@ -24,9 +25,7 @@ pub fn system_flip(
                             FlipType::Mark => {
                                 map.mark(tile.x, tile.y);
                             }
-                            FlipType::OpenAll => {
-                                map.open_all(tile.x, tile.y);
-                            }
+                            FlipType::OpenAll => map.open_all(tile.x, tile.y),
                         }
                     }
                 }
@@ -36,7 +35,7 @@ pub fn system_flip(
                         event_over.send(GameOverEvent { win: true });
                     }
                     MapStatus::Lose => {
-                        println!("You Lost!");
+                        println!("You Lose!");
                         event_over.send(GameOverEvent { win: false });
                     }
                     _ => {}
@@ -44,17 +43,39 @@ pub fn system_flip(
             }
         }
     }
+
+    match map.mode {
+        GameMode::Classic => {}
+        GameMode::Flagger => {
+            map.try_close_far();
+        }
+    }
 }
 
 pub fn system_redraw_dirty(
     mut map: ResMut<Map>,
     data: Res<Data>,
-    mut query: Query<(&TileEntity, &mut Handle<Image>)>,
+    mut query_tile: Query<(&TileEntity, &mut Handle<Image>)>,
+    mut query_cursor: Query<(&CursorMarker, &mut Transform)>,
+    mut query_timing: Query<(&TimingMarker, &mut Text)>,
+    time: Res<Time>,
 ) {
-    for (tile, mut image) in query.iter_mut() {
+    for (tile, mut image) in query_tile.iter_mut() {
         let tile = map.get_tile_mut(tile.x, tile.y).unwrap();
         if tile.get_dirty() {
             *image = data.for_tile(tile);
         }
+    }
+
+    if map.cursor_dirty {
+        for (_, mut transform) in query_cursor.iter_mut() {
+            transform.translation = map.position_of(map.cursor.0, map.cursor.1);
+        }
+        map.cursor_dirty = false;
+    }
+
+    map.update_time(time.elapsed_seconds());
+    for (_, mut text) in query_timing.iter_mut() {
+        text.sections[0].value = format!("{:.3}s", map.get_played_time());
     }
 }

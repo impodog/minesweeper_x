@@ -1,4 +1,4 @@
 mod gen;
 mod info;
 
-pub use info::{Map, MapStatus, Tile, TileType};
+pub use info::{GameMode, Map, MapStatus, Tile, TileType};

@@ -5,7 +5,7 @@ pub struct InputBox;
 
 pub fn system_spawn_input_box(
     mut commands: Commands,
-    mut event: EventReader<SpawnInputBoxEvent>,
+    mut event: EventReader<SpawnMenuEvent>,
     data: Res<Data>,
 ) {
     for _ in event.read() {
@@ -42,7 +42,7 @@ pub fn system_spawn_input_box(
 
 pub fn system_despawn_input_box(
     mut commands: Commands,
-    mut event: EventReader<DespawnInputBoxEvent>,
+    mut event: EventReader<KillMenuEvent>,
     query: Query<Entity, With<InputBox>>,
 ) {
     for _ in event.read() {
@@ -81,6 +81,7 @@ pub fn system_input_box(
 
 pub fn system_start_game(
     mut query: Query<(&mut InputBox, &mut Text)>,
+    selector: Option<Res<Selector>>,
     mut event: EventWriter<GameStartEvent>,
     kbd: ResMut<Input<KeyCode>>,
     state: Res<State<GameState>>,
@@ -88,6 +89,10 @@ pub fn system_start_game(
     if *state != GameState::Menu {
         return;
     }
+    if selector.is_none() {
+        return;
+    }
+    let selector = selector.unwrap();
 
     for (_input_box, text) in query.iter_mut() {
         if kbd.just_pressed(KeyCode::Return) {
@@ -111,11 +116,26 @@ pub fn system_start_game(
                 {
                     return;
                 }
+                let mode = selector.index.into();
+
+                match mode {
+                    GameMode::Classic => {
+                        if mines > width * height / 2 {
+                            return;
+                        }
+                    }
+                    GameMode::Flagger => {
+                        if mines > width * height / 5 {
+                            return;
+                        }
+                    }
+                }
 
                 event.send(GameStartEvent {
                     width,
                     height,
                     mines,
+                    mode,
                 });
             }
         }
@@ -138,22 +158,22 @@ pub fn system_end_game(
 
 pub fn system_start_game_event_listener(
     mut event: EventReader<GameStartEvent>,
-    mut despawn_input_box: EventWriter<DespawnInputBoxEvent>,
+    mut kill_menu: EventWriter<KillMenuEvent>,
     mut state: ResMut<NextState<GameState>>,
 ) {
     for _ in event.read() {
         state.set(GameState::Game);
-        despawn_input_box.send(DespawnInputBoxEvent);
+        kill_menu.send(KillMenuEvent);
     }
 }
 
 pub fn system_end_game_event_listener(
     mut event: EventReader<GameEndEvent>,
-    mut spawn_input_box: EventWriter<SpawnInputBoxEvent>,
+    mut spawn_menu: EventWriter<SpawnMenuEvent>,
     mut state: ResMut<NextState<GameState>>,
 ) {
     for _ in event.read() {
         state.set(GameState::Menu);
-        spawn_input_box.send(SpawnInputBoxEvent);
+        spawn_menu.send(SpawnMenuEvent);
     }
 }

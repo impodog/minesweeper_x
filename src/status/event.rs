@@ -1,17 +1,18 @@
 use crate::prelude::*;
 
-#[derive(Event)]
+#[derive(Debug, Event)]
 pub struct GameStartEvent {
     pub width: usize,
     pub height: usize,
     pub mines: usize,
+    pub mode: GameMode,
 }
 
 #[derive(Event)]
-pub struct SpawnInputBoxEvent;
+pub struct SpawnMenuEvent;
 
 #[derive(Event)]
-pub struct DespawnInputBoxEvent;
+pub struct KillMenuEvent;
 
 #[derive(Event)]
 pub struct GameEndEvent {}

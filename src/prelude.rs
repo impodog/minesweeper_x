@@ -9,4 +9,5 @@ pub use crate::res::*;
 pub use crate::spawn::*;
 pub use crate::status::*;
 
-pub use bevy_simple_text_input as text_input;
+pub static MENU_SELECTION: &'static [&'static str] = &["Classic", "Flagger"];
+pub static MENU_SIZE: f32 = 100.0;

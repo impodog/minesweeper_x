@@ -15,12 +15,13 @@ pub struct Data {
     pub img_6: Handle<Image>,
     pub img_7: Handle<Image>,
     pub img_8: Handle<Image>,
+    pub img_cursor: Handle<Image>,
     pub font: Handle<Font>,
 }
 
 impl Data {
     fn new(server: Res<AssetServer>) -> Self {
-        Self {
+        let result = Self {
             img_flag: server.load("flag.png"),
             img_question: server.load("question.png"),
             img_mine: server.load("mine.png"),
@@ -34,8 +35,10 @@ impl Data {
             img_6: server.load("6.png"),
             img_7: server.load("7.png"),
             img_8: server.load("8.png"),
+            img_cursor: server.load("cursor.png"),
             font: server.load("CascadiaCode.ttf"),
-        }
+        };
+        result
     }
 
     pub fn for_tile(&self, tile: &Tile) -> Handle<Image> {

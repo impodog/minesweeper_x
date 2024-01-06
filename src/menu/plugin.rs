@@ -14,6 +14,9 @@ impl Plugin for MenuPlugin {
                 system_despawn_input_box,
                 system_end_game_event_listener,
                 system_start_game_event_listener,
+                system_selector,
+                system_spawn_selector,
+                system_despawn_selector,
             ),
         );
     }

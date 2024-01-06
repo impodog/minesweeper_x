@@ -13,10 +13,10 @@ pub fn system_game_over(
             GameOverTextMarker,
             Text2dBundle {
                 text: Text::from_section(
-                    if e.win { "You Win!" } else { "You Lost!" },
+                    if e.win { "You Win!" } else { "You Lose!" },
                     TextStyle {
                         font: data.font.clone(),
-                        font_size: 200.0,
+                        font_size: 100.0,
                         color: if e.win { Color::GREEN } else { Color::RED },
                     },
                 ),

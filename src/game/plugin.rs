@@ -11,7 +11,13 @@ impl Plugin for GamePlugin {
         app.add_systems(Update, system_game_over);
         app.add_systems(
             PostUpdate,
-            (system_mouse_listener, system_flip, system_redraw_dirty).run_if(when_play),
+            (
+                system_mouse_listener,
+                system_keyboard_listener,
+                system_flip,
+                system_redraw_dirty,
+            )
+                .run_if(when_play),
         );
     }
 }

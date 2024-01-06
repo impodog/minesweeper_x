@@ -6,6 +6,12 @@ pub struct TileEntity {
     pub y: usize,
 }
 
+#[derive(Component)]
+pub struct CursorMarker;
+
+#[derive(Component)]
+pub struct TimingMarker;
+
 fn calc_scale(window: &Window, width: usize, height: usize) -> f32 {
     let window_width = window.width() as usize;
     let window_height = window.height() as usize;
@@ -14,7 +20,7 @@ fn calc_scale(window: &Window, width: usize, height: usize) -> f32 {
     scale_x.min(scale_y) as f32
 }
 
-fn calc_tile_pos(width: usize, height: usize, scale: f32, x: usize, y: usize) -> Vec3 {
+pub fn calc_tile_pos(width: usize, height: usize, scale: f32, x: usize, y: usize) -> Vec3 {
     let pos = Vec3::new(
         (x as f32 - width as f32 / 2.0 + 0.5) * scale,
         (y as f32 - height as f32 / 2.0 + 0.5) * scale,
@@ -31,9 +37,9 @@ pub fn system_spawn_map(
 ) {
     for e in events.read() {
         let scale = calc_scale(&window.single(), e.width, e.height);
-        let mut map = Map::new(e.width, e.height, e.mines, scale);
+        let mut map = Map::new(e.width, e.height, e.mines, scale, e.mode);
 
-        map.randomize();
+        map.generate();
 
         for x in 0..e.width {
             for y in 0..e.height {
@@ -54,21 +60,84 @@ pub fn system_spawn_map(
             }
         }
 
+        // It seems that bevy has a small issue, and delaying a little time can make the cursor spawn properly.
+        std::thread::sleep(std::time::Duration::from_millis(
+            2 * e.width as u64 * e.height as u64,
+        ));
+
+        system_help_spawn_appendix(&mut commands, scale, &res, &map, &e);
+
+        match map.mode {
+            GameMode::Classic => {}
+            GameMode::Flagger => {}
+        }
+
         commands.insert_resource(map);
     }
+}
+
+fn system_help_spawn_appendix(
+    commands: &mut Commands,
+    scale: f32,
+    res: &Res<Data>,
+    map: &Map,
+    e: &GameStartEvent,
+) {
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(scale, scale)),
+                color: Color::rgba(1.0, 1.0, 1.0, 0.3),
+                ..Default::default()
+            },
+            texture: res.img_cursor.clone(),
+            transform: Transform::from_translation(calc_tile_pos(
+                e.width,
+                e.height,
+                scale,
+                map.cursor.0,
+                map.cursor.1,
+            )),
+            ..Default::default()
+        },
+        CursorMarker,
+    ));
+    commands.spawn((
+        TextBundle {
+            text: Text::from_section(
+                "0",
+                TextStyle {
+                    font: res.font.clone(),
+                    font_size: 40.0,
+                    color: Color::WHITE,
+                },
+            ),
+            global_transform: GlobalTransform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+            ..Default::default()
+        },
+        TimingMarker,
+    ));
 }
 
 pub fn system_despawn_map(
     mut commands: Commands,
     mut event: EventReader<GameEndEvent>,
     query_tile: Query<Entity, With<TileEntity>>,
+    query_cursor: Query<Entity, With<CursorMarker>>,
     query_over: Query<Entity, With<GameOverTextMarker>>,
+    query_timing: Query<Entity, With<TimingMarker>>,
 ) {
     for _ in event.read() {
         for entity in query_tile.iter() {
             commands.entity(entity).despawn_recursive();
         }
+        for entity in query_cursor.iter() {
+            commands.entity(entity).despawn_recursive();
+        }
         for entity in query_over.iter() {
+            commands.entity(entity).despawn_recursive();
+        }
+        for entity in query_timing.iter() {
             commands.entity(entity).despawn_recursive();
         }
     }

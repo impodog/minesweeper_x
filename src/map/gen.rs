@@ -34,7 +34,15 @@ impl Map {
         }
     }
 
-    pub fn randomize(&mut self) {
+    pub fn is_adjacent(x: usize, y: usize, q_x: usize, q_y: usize) -> bool {
+        (x != q_x || y != q_y) && Self::is_adjacent_or_same(x, y, q_x, q_y)
+    }
+
+    pub fn is_adjacent_or_same(x: usize, y: usize, q_x: usize, q_y: usize) -> bool {
+        (x == q_x || x + 1 == q_x || x == q_x + 1) && (y == q_y || y + 1 == q_y || y == q_y + 1)
+    }
+
+    fn randomize(&mut self) {
         let mut rng = rand::thread_rng();
         let mut mines = self.get_mines();
         let (width, height) = self.get_size();
@@ -71,7 +79,7 @@ impl Map {
         }
     }
 
-    pub fn randomize_until_no_loop(&mut self) {
+    fn randomize_until_no_loop(&mut self) {
         loop {
             self.randomize();
             if !self.has_loop() {
@@ -80,72 +88,75 @@ impl Map {
         }
     }
 
-    pub fn has_loop(&self) -> bool {
+    pub fn generate(&mut self) {
+        match self.mode {
+            GameMode::Classic => {
+                self.randomize();
+            }
+            GameMode::Flagger => {
+                self.randomize_until_no_loop();
+            }
+        }
+    }
+
+    fn has_loop(&self) -> bool {
         let mut checker = MapLoopCheck::new(self);
         checker.check()
     }
 }
 
-// This is an implementation of Tarjan's algorithm.
-// This check whether the mines form a loop and isolate some non-mine-blocks
 struct MapLoopCheck<'a> {
     map: &'a Map,
     width: usize,
     height: usize,
     vis: Box<[bool]>,
-    dfn: Box<[usize]>,
-    low: Box<[usize]>,
-    count: usize,
 }
 
 impl<'a> MapLoopCheck<'a> {
     fn new(map: &'a Map) -> Self {
         let (width, height) = map.get_size();
         let vis = vec![false; width * height].into_boxed_slice();
-        let dfn = vec![usize::MAX; width * height].into_boxed_slice();
-        let low = vec![usize::MAX; width * height].into_boxed_slice();
         Self {
             map,
             width,
             height,
             vis,
-            dfn,
-            low,
-            count: 0,
         }
     }
 
-    fn dfs(&mut self, x: usize, y: usize) -> usize {
-        let i = self.map.index_of(x, y);
-        if !self.vis[i] {
-            self.vis[i] = true;
-            self.dfn[i] = self.count;
-            self.low[i] = self.count;
-            self.count += 1;
-
-            Map::for_adjacent(self.width, self.height, x, y, |x, y| {
-                let j = self.map.index_of(x, y);
-                if !self.vis[j] {
-                    self.dfs(x, y);
-                    self.low[i] = self.low[i].min(self.low[j]);
-                } else if self.dfn[j] < self.dfn[i] {
-                    self.low[i] = self.low[i].min(self.dfn[j]);
-                }
-            });
+    fn search(&mut self, cur: usize) -> bool {
+        if self.vis[cur] {
+            true
+        } else {
+            let mut result = false;
+            self.vis[cur] = true;
+            Map::for_adjacent(
+                self.width,
+                self.height,
+                cur % self.width,
+                cur / self.width,
+                |x, y| {
+                    let pos = self.map.index_of(x, y);
+                    if pos != cur && self.map.get_tile(x, y).unwrap().get_num() == usize::MAX {
+                        result = result || self.search(pos);
+                    }
+                },
+            );
+            result
         }
-        i
     }
 
     fn check(&mut self) -> bool {
-        for x in 0..self.width {
-            for y in 0..self.height {
-                let i = self.dfs(x, y);
-                if self.dfn[i] == self.low[i] {
-                    return true;
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let pos = self.map.index_of(x, y);
+                if self.map.get_tile(x, y).unwrap().get_num() == usize::MAX {
+                    if self.search(pos) {
+                        return true;
+                    }
                 }
             }
         }
-
         false
     }
 }

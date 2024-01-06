@@ -3,8 +3,7 @@ mod plugin;
 mod state;
 
 pub use event::{
-    DespawnInputBoxEvent, FlipEvent, FlipType, GameEndEvent, GameOverEvent, GameStartEvent,
-    SpawnInputBoxEvent,
+    FlipEvent, FlipType, GameEndEvent, GameOverEvent, GameStartEvent, KillMenuEvent, SpawnMenuEvent,
 };
 pub use plugin::StatusPlugin;
 pub use state::GameState;
