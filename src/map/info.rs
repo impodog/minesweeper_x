@@ -248,9 +248,15 @@ impl Map {
 
     pub fn calc_score(&mut self) {
         self.endless_score += self.correct as f32 / self.mines as f32;
-        self.endless_score -= (self.flags - self.correct) as f32 / self.mines as f32;
         self.endless_score +=
             (self.opened as f32 - self.width as f32 * self.height as f32) / self.mines as f32;
+        match self.status {
+            MapStatus::Win => {
+                self.endless_score += self.mines as f32 / self.get_played_time();
+            }
+            MapStatus::Lose => {}
+            _ => {}
+        }
 
         self.rounds += 1;
     }
