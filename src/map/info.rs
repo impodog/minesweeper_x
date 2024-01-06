@@ -137,6 +137,29 @@ impl Map {
         }
     }
 
+    fn clear_status(&mut self) {
+        self.status = MapStatus::Play;
+        self.flags = 0;
+        self.opened = 0;
+        self.is_started = false;
+        self.cursor = (self.width / 2, self.height / 2);
+        self.cursor_dirty = true;
+        self.begin_time = 0.0;
+        self.time = 0.0;
+    }
+
+    pub fn restart(&mut self) {
+        self.clear_status();
+
+        self.generate();
+    }
+
+    pub fn replay(&mut self) {
+        self.clear_status();
+
+        self.recover_tiles();
+    }
+
     pub fn get_tile(&self, x: usize, y: usize) -> Option<&Tile> {
         self.tiles.get(y * self.width + x)
     }
@@ -181,8 +204,8 @@ impl Map {
         }
     }
 
-    pub fn position_of(&self, x: usize, y: usize) -> Vec3 {
-        calc_tile_pos(self.width, self.height, self.scale, x, y)
+    pub fn position_of(&self, x: usize, y: usize, z_pos: f32) -> Vec3 {
+        calc_tile_pos(self.width, self.height, self.scale, x, y, z_pos)
     }
 
     pub fn move_cursor(&mut self, x: usize, y: usize) {

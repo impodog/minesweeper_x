@@ -69,7 +69,7 @@ pub fn system_redraw_dirty(
 
     if map.cursor_dirty {
         for (_, mut transform) in query_cursor.iter_mut() {
-            transform.translation = map.position_of(map.cursor.0, map.cursor.1);
+            transform.translation = map.position_of(map.cursor.0, map.cursor.1, 1.0);
         }
         map.cursor_dirty = false;
     }
@@ -77,5 +77,15 @@ pub fn system_redraw_dirty(
     map.update_time(time.elapsed_seconds());
     for (_, mut text) in query_timing.iter_mut() {
         text.sections[0].value = format!("{:.3}s", map.get_played_time());
+    }
+}
+
+pub fn system_restart_game(mut map: ResMut<Map>, input: Res<Input<KeyCode>>) {
+    if input.just_pressed(KeyCode::R) {
+        if input.pressed(KeyCode::ShiftLeft) || input.pressed(KeyCode::ShiftRight) {
+            map.restart();
+        } else {
+            map.replay();
+        }
     }
 }

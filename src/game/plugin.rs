@@ -14,6 +14,7 @@ impl Plugin for GamePlugin {
             (
                 system_mouse_listener,
                 system_keyboard_listener,
+                system_restart_game,
                 system_flip,
                 system_redraw_dirty,
             )

@@ -58,6 +58,8 @@ impl Map {
                 } else {
                     tile.set_num(0);
                 }
+                tile.set_type(TileType::Unknown);
+                tile.set_dirty(true);
                 rest -= 1;
             }
         }
@@ -95,6 +97,17 @@ impl Map {
             }
             GameMode::Flagger => {
                 self.randomize_until_no_loop();
+            }
+        }
+    }
+
+    pub fn recover_tiles(&mut self) {
+        let (width, height) = self.get_size();
+        for y in 0..height {
+            for x in 0..width {
+                let tile = self.get_tile_mut(x, y).unwrap();
+                tile.set_type(TileType::Unknown);
+                tile.set_dirty(true);
             }
         }
     }
