@@ -105,6 +105,7 @@ pub struct Map {
     pub mode: GameMode,
 
     flags: usize,
+    correct: usize,
     opened: usize,
     pub is_started: bool,
 
@@ -128,6 +129,7 @@ impl Map {
             status: MapStatus::Play,
             mode,
             flags: 0,
+            correct: 0,
             opened: 0,
             is_started: false,
             cursor: (width / 2, height / 2),
@@ -140,6 +142,7 @@ impl Map {
     fn clear_status(&mut self) {
         self.status = MapStatus::Play;
         self.flags = 0;
+        self.correct = 0;
         self.opened = 0;
         self.is_started = false;
         self.cursor = (self.width / 2, self.height / 2);
@@ -208,6 +211,16 @@ impl Map {
         calc_tile_pos(self.width, self.height, self.scale, x, y, z_pos)
     }
 
+    pub fn check_win(&mut self) {
+        if self.status != MapStatus::Play {
+            return;
+        }
+
+        if self.opened + self.mines == self.width * self.height || self.correct == self.mines {
+            self.status = MapStatus::Win;
+        }
+    }
+
     pub fn move_cursor(&mut self, x: usize, y: usize) {
         if x < self.width && y < self.height {
             self.cursor = (x, y);
@@ -244,8 +257,6 @@ impl Map {
 
             if num == usize::MAX {
                 self.status = MapStatus::Lose;
-            } else if self.opened + self.mines == self.width * self.height {
-                self.status = MapStatus::Win;
             }
             if num == 0 {
                 let (width, height) = self.get_size();
@@ -273,15 +284,22 @@ impl Map {
 
     fn mark_tile(&mut self, x: usize, y: usize) {
         let mut flags = self.flags;
+        let mut correct = self.correct;
         if let Some(tile) = self.get_tile_mut(x, y) {
             match tile.get_type() {
                 TileType::Unknown => {
                     tile.set_type(TileType::Flag);
                     flags += 1;
+                    if tile.is_mine() {
+                        correct += 1;
+                    }
                 }
                 TileType::Flag => {
                     tile.set_type(TileType::Question);
                     flags -= 1;
+                    if tile.is_mine() {
+                        correct -= 1;
+                    }
                 }
                 TileType::Question => {
                     tile.set_type(TileType::Unknown);
@@ -291,6 +309,7 @@ impl Map {
             tile.set_dirty(true);
         }
         self.flags = flags;
+        self.correct = correct;
     }
 
     fn open_all_tile(&mut self, x: usize, y: usize) {

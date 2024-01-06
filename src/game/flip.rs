@@ -29,6 +29,7 @@ pub fn system_flip(
                         }
                     }
                 }
+                map.check_win();
                 match map.status {
                     MapStatus::Win => {
                         println!("You Win!");
