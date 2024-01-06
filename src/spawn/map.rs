@@ -20,11 +20,22 @@ fn calc_scale(window: &Window, width: usize, height: usize) -> f32 {
     scale_x.min(scale_y) as f32
 }
 
+<<<<<<< HEAD
 pub fn calc_tile_pos(width: usize, height: usize, scale: f32, x: usize, y: usize) -> Vec3 {
+=======
+pub fn calc_tile_pos(
+    width: usize,
+    height: usize,
+    scale: f32,
+    x: usize,
+    y: usize,
+    z_pos: f32,
+) -> Vec3 {
+>>>>>>> 1907601 (v0.3.0 Add cursors, timer, and flagger mode to play)
     let pos = Vec3::new(
         (x as f32 - width as f32 / 2.0 + 0.5) * scale,
         (y as f32 - height as f32 / 2.0 + 0.5) * scale,
-        0.0,
+        z_pos,
     );
     pos
 }
@@ -52,7 +63,7 @@ pub fn system_spawn_map(
                         },
                         texture: res.img_unknown.clone(),
                         transform: Transform::from_translation(calc_tile_pos(
-                            e.width, e.height, scale, x, y,
+                            e.width, e.height, scale, x, y, 0.0,
                         )),
                         ..Default::default()
                     },
@@ -60,11 +71,14 @@ pub fn system_spawn_map(
             }
         }
 
+<<<<<<< HEAD
         // It seems that bevy has a small issue, and delaying a little time can make the cursor spawn properly.
         std::thread::sleep(std::time::Duration::from_millis(
             2 * e.width as u64 * e.height as u64,
         ));
 
+=======
+>>>>>>> 1907601 (v0.3.0 Add cursors, timer, and flagger mode to play)
         system_help_spawn_appendix(&mut commands, scale, &res, &map, &e);
 
         match map.mode {
@@ -97,6 +111,10 @@ fn system_help_spawn_appendix(
                 scale,
                 map.cursor.0,
                 map.cursor.1,
+<<<<<<< HEAD
+=======
+                1.0,
+>>>>>>> 1907601 (v0.3.0 Add cursors, timer, and flagger mode to play)
             )),
             ..Default::default()
         },
