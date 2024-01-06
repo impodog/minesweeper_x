@@ -4,6 +4,8 @@
 
 W/A/S/D or mouse - Move Cursor
 
+Left/Right/Up/Down - Mark the nearby tile in the corresponding direction
+
 J or mouse left click - Reveal Tile
 
 K or mouse right click - Mark Tile

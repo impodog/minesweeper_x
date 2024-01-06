@@ -102,6 +102,30 @@ pub fn system_keyboard_listener(
     } else if input.just_pressed(KeyCode::D) {
         map.move_cursor(x + 1, y);
         moved = true;
+    } else if input.just_pressed(KeyCode::Left) {
+        event.send(FlipEvent {
+            button: FlipType::Mark,
+            x: x.saturating_sub(1),
+            y,
+        });
+    } else if input.just_pressed(KeyCode::Right) {
+        event.send(FlipEvent {
+            button: FlipType::Mark,
+            x: x + 1,
+            y,
+        });
+    } else if input.just_pressed(KeyCode::Up) {
+        event.send(FlipEvent {
+            button: FlipType::Mark,
+            x,
+            y: y + 1,
+        });
+    } else if input.just_pressed(KeyCode::Down) {
+        event.send(FlipEvent {
+            button: FlipType::Mark,
+            x,
+            y: y.saturating_sub(1),
+        });
     }
 
     if moved {
