@@ -23,7 +23,7 @@ pub fn system_spawn_input_box(
                             },
                         },
                         TextSection {
-                            value: "Input Game Size {9<=width<=32};{9<=height<=28};{9<=mines<=200}"
+                            value: "Input Game Size {9<=width<=50};{9<=height<=30};{9<=mines<=200}"
                                 .to_string(),
                             style: TextStyle {
                                 font: data.font.clone(),
@@ -107,9 +107,9 @@ pub fn system_start_game(
                 parts[2].parse::<usize>(),
             ) {
                 if width < 9
-                    || width > 32
+                    || width > 50
                     || height < 9
-                    || height > 28
+                    || height > 30
                     || mines < 9
                     || mines > 200
                     || mines > width * height / 2
@@ -119,7 +119,7 @@ pub fn system_start_game(
                 let mode = selector.index.into();
 
                 match mode {
-                    GameMode::Classic => {
+                    GameMode::Classic | GameMode::Endless => {
                         if mines > width * height / 2 {
                             return;
                         }

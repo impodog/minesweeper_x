@@ -130,7 +130,7 @@ pub fn system_keyboard_listener(
 
     if moved {
         match map.mode {
-            GameMode::Classic => {}
+            GameMode::Classic | GameMode::Endless => {}
             GameMode::Flagger => {
                 event.send(FlipEvent {
                     button: FlipType::Open,

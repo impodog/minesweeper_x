@@ -10,15 +10,21 @@ pub struct Selector {
 #[derive(Component)]
 pub struct SelectorMarker;
 
+#[derive(Component)]
+pub struct SelectorIndex(pub usize);
+
 pub fn system_selector(
     selector: Option<ResMut<Selector>>,
     window: Query<&Window>,
     input: Res<Input<MouseButton>>,
     state: Res<State<GameState>>,
+    mut q_text: Query<(&mut Text, &SelectorIndex)>,
 ) {
     if *state != GameState::Menu {
         return;
     }
+
+    let mut dirty = false;
 
     if let Some(mut selector) = selector {
         if input.just_pressed(MouseButton::Left) {
@@ -26,8 +32,18 @@ pub fn system_selector(
             let index = (pos.x / selector.length) as usize;
             if index < selector.size {
                 selector.index = index;
+                dirty = true;
                 #[cfg(debug_assertions)]
                 println!("Selector index: {}", index);
+            }
+        }
+        if dirty {
+            for (mut text, index) in q_text.iter_mut() {
+                if index.0 == selector.index {
+                    text.sections[0].style.color = Color::GREEN;
+                } else {
+                    text.sections[0].style.color = Color::TEAL;
+                }
             }
         }
     }
@@ -56,7 +72,7 @@ pub fn system_spawn_selector(
                         TextStyle {
                             font: data.font.clone(),
                             font_size: MENU_SIZE / 2.0,
-                            color: Color::YELLOW,
+                            color: if i == 0 { Color::GREEN } else { Color::TEAL },
                         },
                     ),
                     transform: Transform::from_translation(Vec3::new(
@@ -66,6 +82,7 @@ pub fn system_spawn_selector(
                     )),
                     ..Default::default()
                 },
+                SelectorIndex(i),
                 SelectorMarker,
             ));
         }

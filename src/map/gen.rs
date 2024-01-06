@@ -98,6 +98,9 @@ impl Map {
             GameMode::Flagger => {
                 self.randomize_until_no_loop();
             }
+            GameMode::Endless => {
+                self.randomize();
+            }
         }
     }
 

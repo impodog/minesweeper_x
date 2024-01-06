@@ -72,6 +72,7 @@ pub fn system_spawn_map(
         match map.mode {
             GameMode::Classic => {}
             GameMode::Flagger => {}
+            GameMode::Endless => {}
         }
 
         commands.insert_resource(map);

@@ -46,7 +46,7 @@ pub fn system_flip(
     }
 
     match map.mode {
-        GameMode::Classic => {}
+        GameMode::Classic | GameMode::Endless => {}
         GameMode::Flagger => {
             map.try_close_far();
         }

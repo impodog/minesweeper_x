@@ -82,6 +82,7 @@ pub enum MapStatus {
 pub enum GameMode {
     Classic,
     Flagger,
+    Endless,
 }
 
 impl From<usize> for GameMode {
@@ -89,6 +90,7 @@ impl From<usize> for GameMode {
         match n {
             0 => Self::Classic,
             1 => Self::Flagger,
+            2 => Self::Endless,
             _ => panic!("Invalid game mode {}", n),
         }
     }
@@ -114,6 +116,9 @@ pub struct Map {
 
     pub begin_time: f32,
     pub time: f32,
+
+    pub endless_score: f32,
+    pub rounds: usize,
 }
 
 impl Map {
@@ -136,6 +141,8 @@ impl Map {
             cursor_dirty: false,
             begin_time: 0.0,
             time: 0.0,
+            endless_score: 0.0,
+            rounds: 0,
         }
     }
 
@@ -152,15 +159,31 @@ impl Map {
     }
 
     pub fn restart(&mut self) {
-        self.clear_status();
-
-        self.generate();
+        match self.mode {
+            GameMode::Classic | GameMode::Flagger => {
+                self.clear_status();
+                self.generate();
+            }
+            GameMode::Endless => match self.status {
+                MapStatus::Win | MapStatus::Lose => {
+                    self.clear_status();
+                    self.generate();
+                }
+                MapStatus::Play => {}
+            },
+        }
     }
 
     pub fn replay(&mut self) {
-        self.clear_status();
-
-        self.recover_tiles();
+        match self.mode {
+            GameMode::Classic | GameMode::Flagger => {
+                self.clear_status();
+                self.recover_tiles();
+            }
+            GameMode::Endless => {
+                self.restart();
+            }
+        }
     }
 
     pub fn get_tile(&self, x: usize, y: usize) -> Option<&Tile> {
@@ -216,9 +239,24 @@ impl Map {
             return;
         }
 
-        if self.opened + self.mines == self.width * self.height || self.correct == self.mines {
+        if self.opened + self.mines == self.width * self.height
+            || (self.correct == self.mines && self.flags == self.mines)
+        {
             self.status = MapStatus::Win;
         }
+    }
+
+    pub fn calc_score(&mut self) {
+        self.endless_score += self.correct as f32 / self.mines as f32;
+        self.endless_score -= (self.flags - self.correct) as f32 / self.mines as f32;
+        self.endless_score +=
+            (self.opened as f32 - self.width as f32 * self.height as f32) / self.mines as f32;
+
+        self.rounds += 1;
+    }
+
+    pub fn avg_score(&self) -> f32 {
+        self.endless_score / self.rounds as f32
     }
 
     pub fn move_cursor(&mut self, x: usize, y: usize) {
@@ -331,7 +369,7 @@ impl Map {
 
     fn test_tile(&mut self, x: usize, y: usize) -> bool {
         match self.mode {
-            GameMode::Classic => true,
+            GameMode::Classic | GameMode::Endless => true,
             GameMode::Flagger => {
                 if !Self::is_adjacent_or_same(self.cursor.0, self.cursor.1, x, y) {
                     false

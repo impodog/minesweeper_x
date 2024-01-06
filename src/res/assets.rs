@@ -16,6 +16,7 @@ pub struct Data {
     pub img_7: Handle<Image>,
     pub img_8: Handle<Image>,
     pub img_cursor: Handle<Image>,
+    pub img_background: Handle<Image>,
     pub font: Handle<Font>,
 }
 
@@ -36,6 +37,7 @@ impl Data {
             img_7: server.load("7.png"),
             img_8: server.load("8.png"),
             img_cursor: server.load("cursor.png"),
+            img_background: server.load("background.png"),
             font: server.load("CascadiaCode.ttf"),
         };
         result
