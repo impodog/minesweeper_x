@@ -66,3 +66,9 @@ impl Data {
 pub fn system_init_assets(mut commands: Commands, server: Res<AssetServer>) {
     commands.insert_resource(Data::new(server));
 }
+
+pub fn system_init_window(mut window: Query<&mut Window>) {
+    for mut window in window.iter_mut() {
+        window.title = "Minesweeper X".to_string();
+    }
+}

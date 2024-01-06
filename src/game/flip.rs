@@ -80,12 +80,20 @@ pub fn system_redraw_dirty(
     }
 }
 
-pub fn system_restart_game(mut map: ResMut<Map>, input: Res<Input<KeyCode>>) {
+pub fn system_restart_game(
+    mut commands: Commands,
+    mut map: ResMut<Map>,
+    input: Res<Input<KeyCode>>,
+    query_over: Query<Entity, With<GameOverTextMarker>>,
+) {
     if input.just_pressed(KeyCode::R) {
         if input.pressed(KeyCode::ShiftLeft) || input.pressed(KeyCode::ShiftRight) {
             map.restart();
         } else {
             map.replay();
+        }
+        for entity in query_over.iter() {
+            commands.entity(entity).despawn();
         }
     }
 }
